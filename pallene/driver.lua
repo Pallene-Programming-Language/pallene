@@ -6,6 +6,7 @@
 local c_compiler = require "pallene.c_compiler"
 local checker = require "pallene.checker"
 local constant_propagation = require "pallene.constant_propagation"
+local reaching_definitions = require "pallene.reaching_definitions"
 local coder = require "pallene.coder"
 local parser = require "pallene.parser"
 local to_ir = require "pallene.to_ir"
@@ -73,6 +74,11 @@ function driver.compile_internal(filename, stop_after)
 
     module, errs = constant_propagation.run(module)
     if stop_after == "constant_propagation" or not module then
+        return module, errs
+    end
+
+    module, errs = reaching_definitions.run(module)
+    if stop_after == "reaching_definitions" or not module then
         return module, errs
     end
 
