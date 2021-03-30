@@ -115,44 +115,44 @@ declare_type("Value", {
 --
 local ir_cmd_constructors = {
     -- Variables
-    Move       = {"loc", "dst", "src"},
-    GetGlobal  = {"loc", "dst", "global_id"},
-    SetGlobal  = {"loc",        "global_id", "src"},
+    Move          = {"loc", "dst", "src"},
+    GetGlobal     = {"loc", "dst", "global_id"},
+    SetGlobal     = {"loc",        "global_id", "src"},
 
     -- Primitive Values
-    Unop       = {"loc", "dst", "op", "src"},
-    Binop      = {"loc", "dst", "op", "src1", "src2"},
-    Concat     = {"loc", "dst", "srcs"},
-    ToFloat    = {"loc", "dst", "src"},
+    Unop          = {"loc", "dst", "op", "src"},
+    Binop         = {"loc", "dst", "op", "src1", "src2"},
+    Concat        = {"loc", "dst", "srcs"},
+    ToFloat       = {"loc", "dst", "src"},
 
     --- Dynamic Value
-    ToDyn      = {"loc", "src_typ", "dst", "src"},
-    FromDyn    = {"loc", "dst_typ", "dst", "src"},
-    IsTruthy   = {"loc", "dst", "src"},
-    IsNil      = {"loc", "dst", "src"},
+    ToDyn         = {"loc", "src_typ", "dst", "src"},
+    FromDyn       = {"loc", "dst_typ", "dst", "src"},
+    IsTruthy      = {"loc", "dst", "src"},
+    IsNil         = {"loc", "dst", "src"},
 
     -- Arrays
-    NewArr     = {"loc", "dst", "size_hint"},
-
-    GetArr     = {"loc", "dst_typ", "dst", "src_arr", "src_i"},
-    SetArr     = {"loc", "src_typ",        "src_arr", "src_i", "src_v"},
+    -- For performance reasons, GetArr and SetArr require that the index be in the array part of
+    -- the Lua table. That is always the case for arrays returned by NewArr and by RenormalizeArr.
+    NewArr        = {"loc", "dst", "size_hint"},
+    GetArr        = {"loc", "dst_typ", "dst", "src_arr", "src_i"},
+    SetArr        = {"loc", "src_typ",        "src_arr", "src_i", "src_v"},
+    NormalizeArr  = {"loc", "src_typ",        "src_arr", "src_i"},
 
     -- Tables
-    NewTable   = {"loc", "dst", "size_hint"},
-
-    GetTable   = {"loc", "dst_typ", "dst", "src_tab", "src_k"},
-    SetTable   = {"loc", "src_typ",        "src_tab", "src_k", "src_v"},
+    NewTable      = {"loc", "dst", "size_hint"},
+    GetTable      = {"loc", "dst_typ", "dst", "src_tab", "src_k"},
+    SetTable      = {"loc", "src_typ",        "src_tab", "src_k", "src_v"},
 
     -- Records
-    NewRecord  = {"loc", "rec_typ", "dst"},
-
-    GetField   = {"loc", "rec_typ", "dst", "src_rec", "field_name", },
-    SetField   = {"loc", "rec_typ",        "src_rec", "field_name", "src_v"},
+    NewRecord     = {"loc", "rec_typ", "dst"},
+    GetField      = {"loc", "rec_typ", "dst", "src_rec", "field_name", },
+    SetField      = {"loc", "rec_typ",        "src_rec", "field_name", "src_v"},
 
     -- Functions
     -- (dst is false if the return value is void, or unused)
-    CallStatic  = {"loc", "f_typ", "dsts",  "f_id", "srcs"},
-    CallDyn     = {"loc", "f_typ", "dsts", "src_f", "srcs"},
+    CallStatic    = {"loc", "f_typ", "dsts",  "f_id", "srcs"},
+    CallDyn       = {"loc", "f_typ", "dsts", "src_f", "srcs"},
 
     -- Builtin operations
     BuiltinIoWrite    = {"loc",         "srcs"},

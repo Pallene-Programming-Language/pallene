@@ -1141,18 +1141,15 @@ gen_cmd["GetArr"] = function(self, cmd, _func)
     local arr = self:c_value(cmd.src_arr)
     local i   = self:c_value(cmd.src_i)
     local dst_typ = cmd.dst_typ
-    local line = C.integer(cmd.loc.line)
 
     return (util.render([[
         {
-            pallene_renormalize_array(L, $arr, $i, PALLENE_SOURCE_FILE, $line);
             TValue *slot = &$arr->array[$i - 1];
             $get_slot
         }
     ]], {
         arr = arr,
         i = i,
-        line = line,
         get_slot = self:get_luatable_slot(dst_typ, dst, "slot", arr,
             cmd.loc, "array element"),
     }))
@@ -1163,19 +1160,29 @@ gen_cmd["SetArr"] = function(self, cmd, _func)
     local i   = self:c_value(cmd.src_i)
     local v   = self:c_value(cmd.src_v)
     local src_typ = cmd.src_typ
-    local line = C.integer(cmd.loc.line)
+
     return (util.render([[
         {
-            pallene_renormalize_array(L, $arr, $i, PALLENE_SOURCE_FILE, $line);
             TValue *slot = &$arr->array[$i - 1];
             ${set_heap_slot}
         }
     ]], {
         arr = arr,
         i = i,
-        v = v,
-        line = line,
         set_heap_slot = set_heap_slot(src_typ, "slot", v, arr),
+    }))
+end
+
+gen_cmd["NormalizeArr"] = function(self, cmd, _func)
+    local arr = self:c_value(cmd.src_arr)
+    local i   = self:c_value(cmd.src_i)
+    local line = C.integer(cmd.loc.line)
+    return (util.render([[
+        pallene_renormalize_array(L, $arr, $i, PALLENE_SOURCE_FILE, $line);
+    ]], {
+        arr = arr,
+        i = i,
+        line = line,
     }))
 end
 

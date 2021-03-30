@@ -480,6 +480,7 @@ function ToIR:convert_stat(cmds, stat)
                 elseif ltag == "to_ir.LHS.Global" then
                     table.insert(cmds, ir.Cmd.SetGlobal(loc, lhs.id, val))
                 elseif ltag == "to_ir.LHS.Array" then
+                    table.insert(cmds, ir.Cmd.NormalizeArr(loc, lhs.typ, lhs.arr, lhs.i))
                     table.insert(cmds, ir.Cmd.SetArr(loc, lhs.typ, lhs.arr, lhs.i, val))
                 elseif ltag == "to_ir.LHS.Table" then
                     local str = ir.Value.String(lhs.field)
@@ -711,6 +712,7 @@ function ToIR:exp_to_assignment(cmds, dst, exp)
                 local iv = ir.Value.Integer(i)
                 local vv = self:exp_to_value(cmds, field.exp)
                 local src_typ = field.exp._type
+                -- We don't need to renormalize here because NewArr returns a normalized array
                 table.insert(cmds, ir.Cmd.SetArr(loc, src_typ, av, iv, vv))
             end
 
@@ -844,6 +846,7 @@ function ToIR:exp_to_assignment(cmds, dst, exp)
             local arr = self:exp_to_value(cmds, var.t)
             local i   = self:exp_to_value(cmds, var.k)
             local dst_typ = var._type
+            table.insert(cmds, ir.Cmd.NormalizeArr(loc, dst_typ, arr, i))
             table.insert(cmds, ir.Cmd.GetArr(loc, dst_typ, dst, arr, i))
 
         elseif var._tag == "ast.Var.Dot" then
