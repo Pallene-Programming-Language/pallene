@@ -32,4 +32,16 @@ describe("Pallene utils", function()
          assert.equals("",      stdout)
          assert.equals("hello", stderr)
      end)
+     it("deep-copies tables", function()
+        local a = {1,2,3}
+        local b = {1,2,{3}}
+        local c = {1,2,a}
+        local d = {1,2,3}
+        local t = {[4]=4}
+        setmetatable(d, t)
+        assert.are.same(a, util.copy(a))
+        assert.are.same(b, util.copy(b))
+        assert.are.same(c, util.copy(c))
+        assert.are.same(d, util.copy(d))
+    end)
 end)

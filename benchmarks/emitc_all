@@ -1,0 +1,7 @@
+
+
+for D in `find benchmarks -type d`
+do
+    ./pallenec ${D}/pallene.pln
+done
+

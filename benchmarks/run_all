@@ -1,0 +1,51 @@
+#!/usr/bin/env lua
+
+local argparse = require "argparse"
+local benchlib = require "benchmarks.benchlib"
+
+local benchmarks = {
+    {"binarytrees/",13},
+    {"binsearch/",1000000},
+    {"centroid/",10000},
+    {"conway/",50},
+    {"fannkuchredux/",10},
+    {"fasta/",1000000},
+    {"mandelbrot/",1000},
+    {"matmul/",10},
+    {"nbody/",1000000},
+    {"objmandelbrot/",100},
+    {"queen/",12},
+    {"sieve/",10000},
+    {"spectralnorm/",1000}
+}
+local basepath = "benchmarks/"
+local p = argparse(arg[0], "Pallene benchmark runner")
+--p:argument("benchmark_path", "Path to benchmark implementation"):args(1)
+--p:argument("extra_params", "Additional parameters passed to benchmark"):args("*")
+p:option("--lua", "Lua interpreter to use"):default(benchlib.DEFAULT_LUA)
+p:option("--mode", "Measurement method")
+    :default("time")
+    :choices(benchlib.MODE_NAMES)
+
+local args = p:parse()
+
+local mode = benchlib.modes[args.mode]
+if not mode then
+    error(string.format("invalid mode %q", args.mode))
+end
+
+local function filter(current_mode,res)
+    -- only done to the default "time" mode
+    return string.match(res,"real ([0-9.]+)")
+end
+for k,v in ipairs(benchmarks) do
+    local name = v[1]
+    local input = v[2]
+    local bench_cmd = benchlib.prepare_benchmark(
+        args.lua, basepath..name.."pallene.pln", {input})
+
+    local res = mode.run(bench_cmd)
+    io.write(name..', ')
+    io.write(filter(mode,res))
+    io.write('\n')
+end

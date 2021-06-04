@@ -10,6 +10,7 @@ local coder = require "pallene.coder"
 local Lexer = require "pallene.Lexer"
 local parser = require "pallene.parser"
 local to_ir = require "pallene.to_ir"
+local inliner = require "pallene.inliner"
 local uninitialized = require "pallene.uninitialized"
 local util = require "pallene.util"
 local translator = require "pallene.translator"
@@ -41,7 +42,7 @@ end
 
 -- List of available compiler passes, used by `pallenec --dump`.
 -- If a new compiler pass is created, please add it to this list.
-driver.list_of_compiler_passes = {"lexer", "ast", "checker", "ir", "uninitialized", "constant_propagation"}
+driver.list_of_compiler_passes = {"lexer", "ast", "checker", "ir", "inliner","uninitialized", "constant_propagation"}
 
 --
 -- Run AST and IR passes, up-to and including the specified pass. This is meant for unit tests.
@@ -72,6 +73,11 @@ function driver.compile_internal(filename, input, stop_after, opt_level)
     local module
     module, errs = to_ir.convert(prog_ast)
     if stop_after == "ir" or not module then
+        return module, errs
+    end
+
+    module, errs = inliner.inline(module)
+    if stop_after == "inliner" or not module then
         return module, errs
     end
 

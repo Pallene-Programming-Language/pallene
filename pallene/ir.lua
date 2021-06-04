@@ -82,6 +82,8 @@ end
 
 --
 -- Function variables
+-- in PIR, the variable name convention is arg1 -> x1, arg2 -> x2 ... argN -> xN
+-- and then local and temps use values starting from N+1
 --
 
 function ir.add_local(func, name, typ)
@@ -306,6 +308,9 @@ end
 -- Returns the new root node. Child nodes are modified in-place.
 -- If the mapping function returns a falsy value, the original version of the node is kept.
 function ir.map_cmd(root_cmd, f)
+    -- the loop variable tracks a temporary loop-detection analysis
+    -- it is by no means precise (since it fails harshly on nested loops)
+    local loop = false
     local function go(cmd)
         -- Transform child nodes recursively
         local tag = cmd._tag
@@ -317,15 +322,23 @@ function ir.map_cmd(root_cmd, f)
             cmd.then_ = go(cmd.then_)
             cmd.else_ = go(cmd.else_)
         elseif tag == "ir.Cmd.Loop" then
+            -- we can at least detect if we are at a nested loop
+            -- if loop is true here
+            loop = true
             cmd.body = go(cmd.body)
+            loop = false
         elseif tag == "ir.Cmd.For" then
+            -- we can at least detect if we are at a nested loop
+            -- if loop is true here
+            loop = true
             cmd.body = go(cmd.body)
+            loop = false
         else
             -- no child nodes
         end
 
         -- Transform parent node
-        return f(cmd) or cmd
+        return f(cmd,loop) or cmd
     end
     return go(root_cmd)
 end

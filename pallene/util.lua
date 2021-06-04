@@ -26,10 +26,10 @@ function util.render(code, substs)
             end
             local v = substs[k]
             if not v then
-                err = "missing template variable " .. k
+                err = "missing template variable: " .. k
                 return ""
             elseif type(v) ~= "string" then
-                err = "template variable is not a string " .. k
+                err = "template variable is not a string: " .. k
                 return ""
             end
             if a == "" and b == "}" then
@@ -106,6 +106,43 @@ function util.outputs_of_execute(cmd)
     os.remove(err_file)
     return ok, err, out_content, err_content
 end
+
+-- performs a deep copy of the table 'obj'
+
+-- Deep copy a Lua table or object.
+-- Based on https://gist.github.com/tylerneylon/81333721109155b2d244
+function util.copy(root_obj)
+
+    -- We memoize the tables to avoid looping
+    -- forever if there are circular references.
+    local memo = {}
+
+    local function copy(obj)
+        if type(obj) ~= "table" then
+            return obj
+        else
+            if memo[obj] then return memo[obj] end
+
+            local res = {}
+            memo[obj] = res
+
+            -- Be careful with the metamethods:
+            -- 1) Use `next` to iterate over the source table. It acts like "rawget".
+            -- 2) Only set the destination's metatable after we finish setting its keys.
+            local k, v = next(obj)
+            while k do
+                res[copy(k)] = copy(v)
+                k, v = next(obj, k)
+            end
+            return setmetatable(res, getmetatable(obj))
+        end
+    end
+
+    return copy(root_obj)
+end
+
+
+
 
 --
 -- OOP

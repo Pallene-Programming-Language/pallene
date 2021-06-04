@@ -226,37 +226,19 @@ local function Cmd(cmd)
     end
 end
 
-local function print_ir(module,complete)
-    local parts = {}
-    for f_id, func in ipairs(module.functions) do
-        local vs = {}
-        for i = 1, #func.typ.arg_types do
-            vs[i] = i
-        end
-        if complete then
-            table.insert(parts, util.render([[
-                -- $vars
-                -- $type
-                function $proto { -- $name
-                    $body
-                }]], {
-                name  = func.name,
-                vars  = require'inspect'(func.vars,{newline='', indent=""}),
-                type  = require'inspect'(func.typ,{newline='', indent=""}),
-                proto = Call(Fun(f_id), Vars(vs)),
-                body  = Cmd(func.body),
-            }))
-        else
-            table.insert(parts, util.render([[
-                function $proto {
-                    $body
-                }]], {
-                proto = Call(Fun(f_id), Vars(vs)),
-                body  = Cmd(func.body),
-            }))
-        end
-    end
-    return C.reformat(table.concat(parts, "\n\n"))
+local function print_func(func)
+
+    return C.reformat(util.render([[
+        -- $vars
+        -- $type
+        function f {
+            $body
+        }]], {
+        vars  = require'inspect'(func.vars,{newline='', indent=""}),
+        type  = require'inspect'(func.typ,{newline='', indent=""}),
+
+        body  = Cmd(func.body),
+    }))
 end
 
-return print_ir
+return print_func
