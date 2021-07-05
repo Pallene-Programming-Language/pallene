@@ -223,7 +223,7 @@ end
 function Coder:get_stack_slot(typ, dst, slot, loc, description_fmt, ...)
 
     local check_tag
-    if typ._tag == "types.T.Any" then
+    if typ._tag == "types.T.Any" or typ._is_upvalue_box then
         check_tag = ""
     else
         local extra_args = table.pack(...)
@@ -824,18 +824,26 @@ function RecordCoder:declarations()
     end
 
     -- Constructor
+    local set_metatable
+    if self.record_typ._is_upvalue_box then
+        set_metatable = ""
+    else
+        set_metatable = util.render("rec->metatable = hvalue($mt_slot);", 
+            { mt_slot = self.owner:metatable_upvalue_slot(self.record_typ) })
+    end
+
     table.insert(declarations, util.render([[
         static Udata *${constructor_name}(lua_State *L, Udata *G)
         {
             Udata *rec = luaS_newudata(L, $prims_sizeof, $nvalues);
-            rec->metatable = hvalue($mt_slot);
+            $set_metatable
             return rec;
         }
     ]], {
         constructor_name = self:constructor_name(),
         prims_sizeof = self:prims_sizeof(),
         nvalues = C.integer(self.gc_count),
-        mt_slot = self.owner:metatable_upvalue_slot(self.record_typ),
+        set_metatable = set_metatable,
     }))
 
     return table.concat(declarations, "\n/**/\n")

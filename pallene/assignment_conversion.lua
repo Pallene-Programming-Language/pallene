@@ -155,6 +155,9 @@ function Converter:apply_transformations()
                 { value = decl._type }
             )
 
+            -- signal `coder.lua` to avoid creating metatables for upvalue boxes
+            typ._is_upvalue_box = true
+
             self:add_box_type(decl.loc, typ)
             local is_param = self.lambda_of_param[decl]
             local init_exp_update = self.update_init_exp_of_decl[decl]
