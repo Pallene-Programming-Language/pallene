@@ -223,7 +223,7 @@ end
 function Coder:get_stack_slot(typ, dst, slot, loc, description_fmt, ...)
 
     local check_tag
-    if typ._tag == "types.T.Any" or typ._is_upvalue_box then
+    if typ._tag == "types.T.Any" or typ.is_upvalue_box then
         check_tag = ""
     else
         local extra_args = table.pack(...)

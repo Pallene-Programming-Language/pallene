@@ -47,7 +47,7 @@ local Converter = util.Class()
 function converter.convert(prog_ast)
     local conv = Converter.new()
     conv:visit_prog(prog_ast)
-    
+
     -- transform the AST Nodes for captured vars.
     conv:apply_transformations()
 
@@ -151,12 +151,10 @@ function Converter:apply_transformations()
             -- 3. Transform all references to the var from `ast.Var.Name` to ast.Var.Dot
             local typ = types.T.Record(
                 self:type_name(decl.name),
-                { "value" } ,
-                { value = decl._type }
+                { "value" },
+                { value = decl._type },
+                true
             )
-
-            -- signal `coder.lua` to avoid creating metatables for upvalue boxes
-            typ._is_upvalue_box = true
 
             self:add_box_type(decl.loc, typ)
             local is_param = self.lambda_of_param[decl]
