@@ -184,6 +184,7 @@ function Coder:test_tag(typ, slot)
     elseif tag == "types.T.Table"    then tmpl = "ttistable($slot)"
     elseif tag == "types.T.Any"    then tmpl = "1"
     elseif tag == "types.T.Record"   then
+        assert(not typ.is_upvalue_record)
         return (util.render([[pallene_is_record($slot, $mt_slot)]], {
             slot = slot,
             mt_slot = self:metatable_upvalue_slot(typ),
@@ -825,10 +826,10 @@ function RecordCoder:declarations()
 
     -- Constructor
     local set_metatable
-    if self.record_typ._is_upvalue_box then
+    if self.record_typ.is_upvalue_box then
         set_metatable = ""
     else
-        set_metatable = util.render("rec->metatable = hvalue($mt_slot);", 
+        set_metatable = util.render("rec->metatable = hvalue($mt_slot);",
             { mt_slot = self.owner:metatable_upvalue_slot(self.record_typ) })
     end
 
