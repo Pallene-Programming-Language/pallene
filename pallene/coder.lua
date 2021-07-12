@@ -184,7 +184,7 @@ function Coder:test_tag(typ, slot)
     elseif tag == "types.T.Table"    then tmpl = "ttistable($slot)"
     elseif tag == "types.T.Any"    then tmpl = "1"
     elseif tag == "types.T.Record"   then
-        assert(not typ.is_upvalue_record)
+        assert(not typ.is_upvalue_box)
         return (util.render([[pallene_is_record($slot, $mt_slot)]], {
             slot = slot,
             mt_slot = self:metatable_upvalue_slot(typ),
@@ -224,9 +224,10 @@ end
 function Coder:get_stack_slot(typ, dst, slot, loc, description_fmt, ...)
 
     local check_tag
-    if typ._tag == "types.T.Any" or typ.is_upvalue_box then
+    if typ._tag == "types.T.Any" then
         check_tag = ""
     else
+        assert(not typ.is_upvalue_box)
         local extra_args = table.pack(...)
         check_tag = util.render([[
             if (PALLENE_UNLIKELY(!$test)) {
@@ -254,6 +255,7 @@ function Coder:get_stack_slot(typ, dst, slot, loc, description_fmt, ...)
         get_slot  = unchecked_get_slot(typ, dst, slot)
     }))
 end
+
 
 function Coder:get_luatable_slot(typ, dst, slot, tab, loc, description_fmt, ...)
 
@@ -559,9 +561,10 @@ function Coder:lua_entry_point_definition(f_id)
         local typ  = upval.decl.typ
         local dst  = arg_vars[u_id]
         local src  = string.format("&func->upvalue[%s]", C.integer(u_id))
-        table.insert(init_args,
-            self:get_stack_slot(typ, dst, src,
-                func.loc, "upvalue '%s'", C.string(name)))
+        -- Since upvalue boxes do not have metatables, type checking them at runtime is not possible.
+        -- Moreover, since upvalues are only passed around internally by Pallene, it is ok to assume that
+        -- their types will be correct. So we can use the `unchecked_get_slot` instead.
+        table.insert(init_args, unchecked_get_slot(typ, dst, src, func.loc, "upvalue '%s'", C.string(name)))
     end
 
     for i, typ in ipairs(arg_types) do
