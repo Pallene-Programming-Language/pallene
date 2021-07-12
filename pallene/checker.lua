@@ -285,7 +285,7 @@ function Checker:check_program(prog_ast)
                 field_types[field_name] = self:from_ast_type(field_decl.type)
             end
 
-            local typ = types.T.Record(tl_node.name, field_names, field_types)
+            local typ = types.T.Record(tl_node.name, field_names, field_types, false)
             self:add_type_symbol(tl_node.name, typ)
 
             tl_node._type = typ

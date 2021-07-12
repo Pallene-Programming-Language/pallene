@@ -22,9 +22,10 @@ declare_type("T", {
     Array    = {"elem"},
     Table    = {"fields"},
     Record   = {
-        "name",        -- for tostring only
-        "field_names", -- same order as the source type declaration
-        "field_types", -- map { string => types.T }
+        "name",          -- for tostring only
+        "field_names",   -- same order as the source type declaration
+        "field_types",   -- map { string => types.T }
+        "is_upvalue_box" -- whether this is an artificial upvalue record (check assignment_conversion.lua)
     },
 })
 
